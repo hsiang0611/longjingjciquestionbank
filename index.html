@@ -119,7 +119,7 @@ h1{font-family:var(--display);font-weight:900;font-size:calc(3.4*var(--u));margi
 /* ---------- side ---------- */
 .side{display:flex;flex-direction:column;gap:calc(1.2*var(--u));min-height:0}
 .board{display:grid;grid-template-columns:repeat(var(--cols,5),1fr);gap:calc(.7*var(--u))}
-.board.six .tile{aspect-ratio:1.15}
+.board.six .tile{aspect-ratio:1.25}
 .board.six .tile .tn{font-size:calc(1.9*var(--u))}
 .tile{aspect-ratio:1;border-radius:calc(.8*var(--u));border:1px solid var(--line);background:rgba(255,255,255,.04);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:calc(.25*var(--u));padding:0;
   transition:transform .15s,border-color .2s,background .2s,box-shadow .2s,opacity .2s}
@@ -131,16 +131,20 @@ h1{font-family:var(--display);font-weight:900;font-size:calc(3.4*var(--u));margi
 .tile.drawn .tn{color:var(--muted)}
 .tile.cur{opacity:1;border-color:var(--gold);background:var(--gold-soft);box-shadow:0 0 0 calc(.2*var(--u)) rgba(227,183,101,.25),0 0 calc(1.5*var(--u)) rgba(227,183,101,.35)}
 .tile.cur .tn,.tile.cur .ts{color:var(--gold)}
+.tile.locked{opacity:.35}
+.tile.locked:hover{transform:none;border-color:var(--line);cursor:not-allowed}
 .tile.locked::after{content:"";position:absolute;top:calc(.35*var(--u));right:calc(.35*var(--u));width:max(9px,calc(.9*var(--u)));height:max(9px,calc(.9*var(--u)));opacity:.55;
   background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23e3b765' stroke-width='2.5' stroke-linecap='round'%3E%3Crect x='4' y='10' width='16' height='11' rx='2'/%3E%3Cpath d='M8 10V7a4 4 0 0 1 8 0v3'/%3E%3C/svg%3E") center/contain no-repeat}
 .tile{position:relative}
-.lockchip{display:inline-flex;align-items:center;gap:calc(.4*var(--u));background:var(--gold-soft);color:var(--gold);border-color:rgba(227,183,101,.45)}
-.lockchip svg{width:1em;height:1em;fill:none;stroke:currentColor;stroke-width:2.5;stroke-linecap:round}
-.lockchip.shake{animation:shake .4s}
-@keyframes shake{25%{transform:translateX(-4px)}50%{transform:translateX(4px)}75%{transform:translateX(-3px)}}
-.numlabel .chips-row{display:flex;gap:calc(.5*var(--u));flex-wrap:wrap}
-.dlock{color:var(--gold);font-size:max(12px,calc(1.2*var(--u)));display:flex;align-items:center;gap:.5em}
-.dlock svg{width:1em;height:1em;fill:none;stroke:currentColor;stroke-width:2.5;stroke-linecap:round}
+.boardnote{display:flex;align-items:center;gap:.5em;font-size:max(10px,calc(1.05*var(--u)));color:var(--gold);letter-spacing:.08em;margin-top:calc(-.3*var(--u))}
+.boardnote svg,.toast svg,.dlock svg{width:1em;height:1em;flex:none;fill:none;stroke:currentColor;stroke-width:2.5;stroke-linecap:round}
+.toast{position:absolute;left:50%;bottom:calc(6*var(--u));transform:translate(-50%,calc(1*var(--u)));background:var(--panel);border:1px solid rgba(227,183,101,.5);color:var(--gold);
+  padding:calc(.8*var(--u)) calc(1.6*var(--u));border-radius:999px;font-size:max(12px,calc(1.3*var(--u)));opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;z-index:30;
+  display:flex;gap:.5em;align-items:center;white-space:nowrap;box-shadow:0 calc(1*var(--u)) calc(3*var(--u)) rgba(0,0,0,.4)}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.ditem.locked .dsum{display:flex;gap:calc(1*var(--u));align-items:center;padding:calc(1*var(--u)) calc(.4*var(--u));font-size:max(12px,calc(1.35*var(--u)))}
+.ditem.locked .dn{opacity:.5}
+.dlock{color:var(--gold);display:flex;align-items:center;gap:.5em}
 
 .primary{height:calc(6.2*var(--u));min-height:48px;border:0;border-radius:calc(.9*var(--u));background:linear-gradient(180deg,var(--gold-2),var(--gold));color:var(--gold-ink);
   font-family:var(--display);font-weight:900;font-size:calc(2.5*var(--u));letter-spacing:.3em;text-indent:.3em;display:flex;align-items:center;justify-content:center;gap:calc(1*var(--u));
@@ -280,10 +284,7 @@ h1{font-family:var(--display);font-weight:900;font-size:calc(3.4*var(--u));margi
           <div class="num idle" id="num">00</div>
           <div class="numlabel">
             <span class="label" id="label">尚未抽題</span>
-            <span class="chips-row">
-              <span class="chip" id="chip" hidden></span>
-              <span class="chip lockchip" id="lockchip" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg><span id="locktext"></span></span>
-            </span>
+            <span class="chip" id="chip" hidden></span>
           </div>
         </div>
         <button class="timer" id="timer" type="button" hidden aria-label="倒數計時，點一下暫停或繼續">
@@ -301,6 +302,7 @@ h1{font-family:var(--display);font-weight:900;font-size:calc(3.4*var(--u));margi
 
     <aside class="side">
       <div class="board" id="board" aria-label="題號板"></div>
+      <div class="boardnote" id="boardnote" hidden></div>
       <button class="primary" id="draw" type="button">抽題 <kbd>Space</kbd></button>
       <div class="row">
         <button class="sec" id="show" type="button" disabled><span id="showText">看答案</span> <kbd class="k">Enter</kbd></button>
@@ -347,6 +349,7 @@ h1{font-family:var(--display);font-weight:900;font-size:calc(3.4*var(--u));margi
     <div class="dlist" id="dlist"></div>
   </aside>
 
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
   <canvas id="confetti" aria-hidden="true"></canvas>
 </div>
 
@@ -357,9 +360,11 @@ h1{font-family:var(--display);font-weight:900;font-size:calc(3.4*var(--u));margi
      items:[...]  (+ordered:true 顯示 1.2.3. 編號)
      chips:[...]  (+ordered:true 顯示順序，用於有優先順序的項目)
      groups:[{h:"分組標題", items:[...]}]   note:"補充說明（灰字）"
-   lockUntil:"YYYY-MM-DD"  → 該日 00:00（瀏覽器本地時間）前不開放看答案
-   a:{enc:"..."}           → 答案以編碼存放，看原始碼不會直接看到。產生方式：在瀏覽器主控台執行
-                              encAnswer({text:"答案"})，把回傳字串貼進 enc。
+   {lockUntil:"YYYY-MM-DDTHH:MM", enc:"..."}
+       → 該時間（瀏覽器本地時間）前整題不公布：抽不到、題號格鎖住、題庫也看不到題目。
+         題目與答案一起編碼存放，看原始碼不會直接讀到。產生方式：在瀏覽器按 F12 開主控台執行
+         encItem({q:"題目", a:{text:"答案"}})，把回傳字串貼進 enc。（a 的寫法同一般題目）
+   a:{enc:"..."}  → 只編碼答案、題目明碼，用 encAnswer({text:"答案"}) 產生。
 */
 const QS=[
  {q:"本會委員會之種類有哪幾種？",
@@ -384,21 +389,14 @@ const QS=[
   a:{items:["民國 86 年 4 月 26 日成立","中二區第 18 個分會","中區第 53 個分會","總會第 209 個分會"]}},
  {q:"會員代表大會應於召開幾日前將開會通知函寄出函知全體會員及主管機關？",
   a:{text:"15 日前"}},
- /* ---- 2026/10/18 當天才開放答案 ---- */
- {q:"近年來「擦亮世界的角落」活動與哪一家上市公司連續兩年建立夥伴關係？",lockUntil:"2026-10-18",
-  a:{enc:"eyJ0ZXh0Ijoi6I+v5Z+O6YeN6Zu7In0="}},
- {q:"龍井青商在「奧瑞岡執行長盃」或「薪火盃」中創下的最高名次為何？當時的參賽選手有哪幾位？",lockUntil:"2026-10-18",
-  a:{enc:"eyJsZWFkIjoi5Lqe6LuNIiwiY2hpcHMiOlsi546L55ub5byYIiwi5pa96K2w5LuBIiwi5YqJ5piO5r2t5pyD6ZW3Il0sIm5vdGUiOiLlj4Pos73pgbjmiYsifQ=="}},
- {q:"龍井青商首次榮獲總會長頒發「最傑出分會獎」是在哪一年？",lockUntil:"2026-10-18",
-  a:{enc:"eyJ0ZXh0IjoiMjAyNSDlubQifQ=="}},
- {q:"「擦亮世界的角落」活動是在哪一年獲獎，並受邀至交通部進行成果分享與領獎？",lockUntil:"2026-10-18",
-  a:{enc:"eyJ0ZXh0IjoiMjAyMyDlubQifQ=="}},
- {q:"從哪一年開始，「擦亮世界的角落」活動首次導入「擦亮 App」來統計擦拭面數？",lockUntil:"2026-10-18",
-  a:{enc:"eyJ0ZXh0IjoiMjAyNCDlubQifQ=="}},
- {q:"2026 年舉辦的「國小金口獎演講比賽」，是以哪一種語言（語種）為主？",lockUntil:"2026-10-18",
-  a:{enc:"eyJ0ZXh0Ijoi5Y+w6KqeIn0="}},
- {q:"近年來「擦亮世界的角落」活動獲得哪一間學校大力支持？",lockUntil:"2026-10-18",
-  a:{enc:"eyJ0ZXh0Ijoi6b6N5LqV5ZyL5LitIn0="}},
+ /* ---- 以下 7 題（題目與答案）於 2026/10/18 15:30 公布，內容已編碼 ---- */
+ {lockUntil:"2026-10-18T15:30",enc:"eyJxIjoi6L+R5bm05L6G44CM5pOm5Lqu5LiW55WM55qE6KeS6JC944CN5rS75YuV6IiH5ZOq5LiA5a625LiK5biC5YWs5Y+46YCj57qM5YWp5bm05bu656uL5aSl5Ly06Zec5L+C77yfIiwiYSI6eyJ0ZXh0Ijoi6I+v5Z+O6YeN6Zu7In19"},
+ {lockUntil:"2026-10-18T15:30",enc:"eyJxIjoi6b6N5LqV6Z2S5ZWG5Zyo44CM5aWn55Ge5bKh5Z+36KGM6ZW355uD44CN5oiW44CM6Jaq54Gr55uD44CN5Lit5Ym15LiL55qE5pyA6auY5ZCN5qyh54K65L2V77yf55W25pmC55qE5Y+D6LO96YG45omL5pyJ5ZOq5bm+5L2N77yfIiwiYSI6eyJsZWFkIjoi5Lqe6LuNIiwiY2hpcHMiOlsi546L55ub5byYIiwi5pa96K2w5LuBIiwi5YqJ5piO5r2t5pyD6ZW3Il0sIm5vdGUiOiLlj4Pos73pgbjmiYsifX0="},
+ {lockUntil:"2026-10-18T15:30",enc:"eyJxIjoi6b6N5LqV6Z2S5ZWG6aaW5qyh5qau542y57i95pyD6ZW36aCS55m844CM5pyA5YKR5Ye65YiG5pyD542O44CN5piv5Zyo5ZOq5LiA5bm077yfIiwiYSI6eyJ0ZXh0IjoiMjAyNSDlubQifX0="},
+ {lockUntil:"2026-10-18T15:30",enc:"eyJxIjoi44CM5pOm5Lqu5LiW55WM55qE6KeS6JC944CN5rS75YuV5piv5Zyo5ZOq5LiA5bm0542y542O77yM5Lim5Y+X6YKA6Iez5Lqk6YCa6YOo6YCy6KGM5oiQ5p6c5YiG5Lqr6IiH6aCY542O77yfIiwiYSI6eyJ0ZXh0IjoiMjAyMyDlubQifX0="},
+ {lockUntil:"2026-10-18T15:30",enc:"eyJxIjoi5b6e5ZOq5LiA5bm06ZaL5aeL77yM44CM5pOm5Lqu5LiW55WM55qE6KeS6JC944CN5rS75YuV6aaW5qyh5bCO5YWl44CM5pOm5LquIEFwcOOAjeS+hue1seioiOaTpuaLremdouaVuO+8nyIsImEiOnsidGV4dCI6IjIwMjQg5bm0In19"},
+ {lockUntil:"2026-10-18T15:30",enc:"eyJxIjoiMjAyNiDlubToiInovqbnmoTjgIzlnIvlsI/ph5Hlj6PnjY7mvJTorJvmr5Tos73jgI3vvIzmmK/ku6Xlk6rkuIDnqK7oqp7oqIDvvIjoqp7nqK7vvInngrrkuLvvvJ8iLCJhIjp7InRleHQiOiLlj7Doqp4ifX0="},
+ {lockUntil:"2026-10-18T15:30",enc:"eyJxIjoi6L+R5bm05L6G44CM5pOm5Lqu5LiW55WM55qE6KeS6JC944CN5rS75YuV542y5b6X5ZOq5LiA6ZaT5a245qCh5aSn5Yqb5pSv5oyB77yfIiwiYSI6eyJ0ZXh0Ijoi6b6N5LqV5ZyL5LitIn19"},
 ];
 /* ===== 題庫結束 ===== */
 
@@ -408,12 +406,18 @@ const stage=$('stage'),num=$('num'),label=$('label'),chip=$('chip'),q=$('q'),ans
       noRepeat=$('norepeat'),seg=$('seg'),roundEl=$('round'),drawnEl=$('drawn'),pbar=$('pbar'),drawer=$('drawer'),scrim=$('scrim'),dlist=$('dlist');
 const IDLE='按「抽題」或空白鍵開始';
 const LOCK_SVG='<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>';
-const decAnswer=a=>{if(!a||!a.enc)return a;try{return JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(a.enc),c=>c.charCodeAt(0))));}catch(e){return{text:'（答案解碼失敗）'}}};
-window.encAnswer=o=>btoa(String.fromCharCode(...new TextEncoder().encode(JSON.stringify(o))));
-const lockTime=i=>QS[i].lockUntil?new Date(QS[i].lockUntil+'T00:00:00').getTime():0;
+const b64dec=t=>JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(t),c=>c.charCodeAt(0))));
+const b64enc=o=>btoa(String.fromCharCode(...new TextEncoder().encode(JSON.stringify(o))));
+window.encAnswer=b64enc;window.encItem=b64enc;
+const decAnswer=a=>{if(!a||!a.enc)return a;try{return b64dec(a.enc)}catch(e){return{text:'（答案解碼失敗）'}}};
+/* item(i) → {q,a}，整題編碼的項目在第一次使用時解碼 */
+const item=i=>{const x=QS[i];if(!x.enc)return x;if(!x._d){try{x._d=b64dec(x.enc)}catch(e){x._d={q:'（題目解碼失敗）',a:{text:''}}}}return x._d;};
+const lockTime=i=>{const d=QS[i].lockUntil;return d?new Date(d.includes('T')?d:d+'T00:00:00').getTime():0;};
 const isLocked=i=>lockTime(i)>Date.now();
-const lockLabel=i=>{const d=new Date(lockTime(i));return `${d.getMonth()+1}/${d.getDate()}`;};
-const lockchip=$('lockchip'),locktext=$('locktext');
+const lockLabel=i=>{const d=new Date(lockTime(i));const hm=(d.getHours()||d.getMinutes())?` ${d.getHours()}:${String(d.getMinutes()).padStart(2,'0')}`:'';return `${d.getMonth()+1}/${d.getDate()}${hm}`;};
+const avail=()=>QS.map((_,i)=>i).filter(i=>!isLocked(i));
+let toastT;
+function toast(msg){const t=$('toast');t.innerHTML=LOCK_SVG+esc(msg);t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),2400);}
 const pad=n=>String(n).padStart(2,'0');
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
@@ -456,36 +460,43 @@ function renderAnswer(a,into){
   if(a.groups) add('groups',a.groups.map(g=>`<div class="group"><h4>${esc(g.h)}</h4><ol>${li(g.items)}</ol></div>`).join(''));
   if(a.note) add('note',esc(a.note));
 }
-board.innerHTML=QS.map((x,i)=>`<button class="tile" type="button" data-i="${i}" title="${esc(x.q)}"><span class="tn">${pad(i+1)}</span><span class="ts">未抽</span></button>`).join('');
-dlist.innerHTML=QS.map((x,i)=>`<details class="ditem" data-i="${i}"><summary><span class="dn">${pad(i+1)}</span><span class="dq">${esc(x.q)}</span><span class="dst">未抽</span></summary><div class="dbody"><div class="ansbody"></div><button class="sec dpick" type="button" data-pick="${i}">抽這題</button></div></details>`).join('');
+board.innerHTML=QS.map((_,i)=>`<button class="tile" type="button" data-i="${i}"><span class="tn">${pad(i+1)}</span><span class="ts">未抽</span></button>`).join('');
+function renderDrawer(){
+  dlist.innerHTML=QS.map((_,i)=>{
+    if(isLocked(i))return `<div class="ditem locked"><div class="dsum"><span class="dn">${pad(i+1)}</span><span class="dq dlock">${LOCK_SVG}題目與答案將於 ${lockLabel(i)} 公布</span></div></div>`;
+    return `<details class="ditem" data-i="${i}"><summary><span class="dn">${pad(i+1)}</span><span class="dq">${esc(item(i).q)}</span><span class="dst">未抽</span></summary><div class="dbody"><div class="ansbody"></div><button class="sec dpick" type="button" data-pick="${i}">抽這題</button></div></details>`;
+  }).join('');
+  dlist.querySelectorAll('details.ditem').forEach(d=>renderAnswer(item(+d.dataset.i).a,d.querySelector('.ansbody')));
+}
 board.style.setProperty('--cols',QS.length>10?6:5);board.classList.toggle('six',QS.length>10);
+let lockSig=null,unlockT=null;
 function syncLocks(){
-  [...board.children].forEach((t,i)=>t.classList.toggle('locked',isLocked(i)));
-  dlist.querySelectorAll('.ditem').forEach((d,i)=>{
-    const body=d.querySelector('.ansbody');
-    if(isLocked(i)){if(!body.dataset.locked){body.dataset.locked='1';body.innerHTML=`<div class="dlock">${LOCK_SVG}答案將於 ${QS[i].lockUntil.replace(/-/g,'/')} 開放</div>`;}}
-    else if(body.dataset.locked||!body.childElementCount){delete body.dataset.locked;renderAnswer(QS[i].a,body);}
-  });
-  if(cur>=0&&!animating){
-    const l=isLocked(cur);
-    lockchip.hidden=!l;locktext.textContent=`答案 ${l?lockLabel(cur):''} 開放`;
-    showBtn.disabled=l;showText.textContent=l?`答案 ${lockLabel(cur)} 開放`:(ans.hidden?'看答案':'收起答案');
-  }
+  const sig=QS.map((_,i)=>isLocked(i)?1:0).join('');
+  const changed=sig!==lockSig;lockSig=sig;
+  [...board.children].forEach((t,i)=>{const l=isLocked(i);t.classList.toggle('locked',l);t.title=l?`${lockLabel(i)} 公布`:item(i).q;});
+  const locked=QS.map((_,i)=>i).filter(isLocked);
+  $('boardnote').hidden=!locked.length;
+  if(locked.length)$('boardnote').innerHTML=`${LOCK_SVG}尚有 ${locked.length} 題將於 ${lockLabel(locked[0])} 公布`;
+  if(changed){renderDrawer();syncBoard();}
+  /* 到公布時間自動解鎖（頁面開著不用重新整理） */
+  clearTimeout(unlockT);
+  const next=Math.min(...locked.map(lockTime));
+  if(isFinite(next)){const ms=next-Date.now()+300;if(ms<2e9)unlockT=setTimeout(syncLocks,ms);}
 }
 syncLocks();setInterval(syncLocks,30000);
 $('dsub').textContent=`共 ${QS.length} 題`;
-document.querySelector('.stat .of').textContent='/'+QS.length;
 
 function syncBoard(){
   [...board.children].forEach((t,i)=>{
     t.classList.toggle('drawn',used.has(i)&&i!==cur);t.classList.toggle('cur',i===cur);
-    t.querySelector('.ts').textContent=i===cur?'本題':used.has(i)?'已抽':'未抽';
+    t.querySelector('.ts').textContent=isLocked(i)?'未公布':i===cur?'本題':used.has(i)?'已抽':'未抽';
   });
   dlist.querySelectorAll('.ditem').forEach((d,i)=>{
     d.classList.toggle('drawn',used.has(i)&&i!==cur);d.classList.toggle('cur',i===cur);
-    d.querySelector('.dst').textContent=i===cur?'本題':used.has(i)?'已抽':'未抽';
+    const st=d.querySelector('.dst');if(st)st.textContent=i===cur?'本題':used.has(i)?'已抽':'未抽';
   });
-  roundEl.textContent=round;drawnEl.textContent=used.size;pbar.style.width=(used.size/QS.length*100)+'%';
+  const n=avail().length;
+  roundEl.textContent=round;drawnEl.textContent=used.size;document.querySelector('.stat .of').textContent='/'+n;pbar.style.width=(used.size/n*100)+'%';
 }
 
 /* ---------- sound (Web Audio, no files) ---------- */
@@ -542,35 +553,37 @@ setTimerLen(tLen);
 function hideAnswer(){ans.hidden=true;card.classList.remove('revealed');showText.textContent='看答案';}
 function toggleAnswer(){
   if(cur<0||animating)return;
-  if(isLocked(cur)){lockchip.classList.remove('shake');void lockchip.offsetWidth;lockchip.classList.add('shake');beep(300,.15,'triangle',.06);return;}
-  if(ans.hidden){renderAnswer(QS[cur].a,ansbody);ans.hidden=false;card.classList.add('revealed');showText.textContent='收起答案';stopTimer(false);}
+  if(ans.hidden){renderAnswer(item(cur).a,ansbody);ans.hidden=false;card.classList.add('revealed');showText.textContent='收起答案';stopTimer(false);}
   else hideAnswer();
   saveHot();
 }
 
 /* ---------- draw ---------- */
 function pickTarget(){
-  let pool=QS.map((_,i)=>i);
+  let pool=avail();
+  if(!pool.length)return -1;
   if(noRepeat.checked){
-    if(used.size>=QS.length){used.clear();round++;}
+    if(pool.every(i=>used.has(i))){used.clear();round++;}
     pool=pool.filter(i=>!used.has(i));
   }
   if(pool.length>1)pool=pool.filter(i=>i!==cur);
   return pool[Math.floor(Math.random()*pool.length)];
 }
-function busy(b){animating=b;drawBtn.disabled=b;resetBtn.disabled=b;showBtn.disabled=b||cur<0||(cur>=0&&isLocked(cur));}
+function busy(b){animating=b;drawBtn.disabled=b;resetBtn.disabled=b;showBtn.disabled=b||cur<0;}
 async function draw(forced){
   if(animating)return;
-  busy(true);
+  if(forced!=null&&isLocked(forced)){toast(`第 ${forced+1} 題將於 ${lockLabel(forced)} 公布`);return;}
   const target=(forced==null)?pickTarget():forced;
+  if(target<0){toast('目前沒有可抽的題目');return;}
+  busy(true);
   stopTimer(true);hideAnswer();
   q.className='q idle';q.textContent='抽題中…';
-  num.classList.remove('idle','land');num.classList.add('spin');chip.hidden=true;lockchip.hidden=true;label.textContent='抽題中';
+  num.classList.remove('idle','land');num.classList.add('spin');chip.hidden=true;label.textContent='抽題中';
   const tiles=[...board.children];
   if(!reduced){
-    let delay=45,last=-1;
+    let delay=45,last=-1;const pool=avail();
     for(let s=0;s<16;s++){
-      let r;do{r=Math.floor(Math.random()*QS.length)}while(r===last&&QS.length>1);last=r;
+      let r;do{r=pool[Math.floor(Math.random()*pool.length)]}while(r===last&&pool.length>1);last=r;
       num.textContent=pad(r+1);tiles.forEach(t=>t.classList.remove('flash'));tiles[r].classList.add('flash');tick();
       await sleep(delay);delay*=1.13;
     }
@@ -582,13 +595,13 @@ async function draw(forced){
   label.textContent=`第 ${cur+1} 題`;chip.textContent=`第 ${round} 輪 · 本輪第 ${used.size} 題`;chip.hidden=false;
   syncBoard();
   await sleep(reduced?0:300);
-  q.className='q in';q.textContent=QS[cur].q;
-  busy(false);syncLocks();startTimer();saveHot();
+  q.className='q in';q.textContent=item(cur).q;
+  busy(false);startTimer();saveHot();
 }
 function reset(){
   if(animating)return;
   used.clear();cur=-1;round=1;
-  num.textContent='00';num.className='num idle';label.textContent='尚未抽題';chip.hidden=true;lockchip.hidden=true;
+  num.textContent='00';num.className='num idle';label.textContent='尚未抽題';chip.hidden=true;
   q.className='q idle';q.textContent=IDLE;hideAnswer();showBtn.disabled=true;stopTimer(true);syncBoard();saveHot();
 }
 
@@ -695,11 +708,12 @@ function saveHot(){try{window.claude?.hot?.snapshot?.(snapshot);}catch(e){}}
 function start(data){
   if(data&&Array.isArray(data.used)){
     used=new Set(data.used);cur=data.cur??-1;round=data.round||1;
+    if(cur>=0&&isLocked(cur))cur=-1;
     if(cur>=0){
       num.textContent=pad(cur+1);num.className='num';label.textContent=`第 ${cur+1} 題`;
       chip.textContent=`第 ${round} 輪 · 本輪第 ${used.size} 題`;chip.hidden=false;
-      q.className='q';q.textContent=QS[cur].q;showBtn.disabled=false;
-      if(data.shown&&!isLocked(cur)){renderAnswer(QS[cur].a,ansbody);ans.hidden=false;card.classList.add('revealed');showText.textContent='收起答案';}
+      q.className='q';q.textContent=item(cur).q;showBtn.disabled=false;
+      if(data.shown){renderAnswer(item(cur).a,ansbody);ans.hidden=false;card.classList.add('revealed');showText.textContent='收起答案';}
     }
   }
   syncBoard();syncLocks();saveHot();
