@@ -155,7 +155,7 @@ h1{font-family:var(--display);font-weight:900;font-size:calc(3.4*var(--u));margi
 .sw::after{content:"";position:absolute;top:2px;bottom:2px;left:2px;aspect-ratio:1;border-radius:50%;background:var(--ink);transition:transform .2s}
 .toggle input:checked+.sw{background:var(--blue)}
 .toggle input:checked+.sw::after{transform:translateX(calc(1.5*var(--u)))}
-@media (max-width:760px){.toggle input:checked+.sw::after{transform:translateX(18px)}}
+:root[data-layout="mobile"] .toggle input:checked+.sw::after{transform:translateX(18px)}
 .toggle input:focus-visible+.sw{outline:2px solid var(--gold);outline-offset:2px}
 
 /* ---------- footer ---------- */
@@ -191,28 +191,42 @@ h1{font-family:var(--display);font-weight:900;font-size:calc(3.4*var(--u));margi
 .dbody .group ol,.dbody .group h4{font-size:1em}
 .dpick{align-self:flex-start;height:auto;padding:calc(.4*var(--u)) calc(1.2*var(--u));font-size:max(12px,calc(1.2*var(--u)))}
 
-/* ---------- phones ---------- */
-@media (max-width:760px){
-  :root{--u:2vw}
-  html,body{height:auto}
-  body{display:block;overflow:auto}
-  .stage{width:100%;height:auto;min-height:100vh;grid-template-rows:auto auto auto;padding-block:16px 24px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));gap:16px}
-  .wm,.hints,.primary kbd,kbd.k{display:none}
-  .top{flex-direction:column;align-items:flex-start;gap:10px}
-  .status{width:100%;justify-content:space-between}
-  h1{font-size:26px}.eyebrow{font-size:11px}
-  .body{grid-template-columns:1fr;gap:16px}
-  .card{padding:18px 16px;gap:12px}
-  .num{font-size:64px}.card.revealed .num{font-size:40px}
-  .label{font-size:16px}.q{font-size:20px}.q.idle{font-size:16px}
-  .ansbody{font-size:15px}.ansbody .text{font-size:18px}.ansbody .lead{font-size:20px}.chip-i{font-size:14px}.group ol{font-size:14px}.group h4{font-size:14px}
-  .groups{grid-template-columns:1fr}
-  .timer{width:64px;height:64px;margin-bottom:14px}.timer .tval{font-size:22px}
-  .tile .tn{font-size:18px}
-  .primary{font-size:20px;height:52px}
-  .drawer{width:100%;padding:16px}
-  .dhead h2{font-size:18px}.ditem summary{font-size:14px}
-}
+/* ---------- layout modes: data-layout="mobile" is the one-column phone layout (auto under 760px, or chosen by the user);
+   data-forced marks the stage layout forced onto a narrow screen, which then renders at a fixed 1100px width and scrolls. ---------- */
+:root[data-layout="mobile"]{--u:min(2vw,9.6px)}
+:root[data-layout="mobile"],:root[data-layout="mobile"] body{height:auto}
+:root[data-layout="mobile"] body{display:block;overflow:auto}
+:root[data-layout="mobile"] .stage{width:100%;height:auto;min-height:100vh;grid-template-rows:auto auto auto;padding-block:16px 24px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));gap:16px}
+:root[data-layout="mobile"] .wm, :root[data-layout="mobile"] .hints, :root[data-layout="mobile"] .primary kbd, :root[data-layout="mobile"] kbd.k{display:none}
+:root[data-layout="mobile"] .top{flex-direction:column;align-items:flex-start;gap:10px}
+:root[data-layout="mobile"] .status{width:100%;justify-content:space-between}
+:root[data-layout="mobile"] h1{font-size:26px}
+:root[data-layout="mobile"] .eyebrow{font-size:11px}
+:root[data-layout="mobile"] .body{grid-template-columns:1fr;gap:16px}
+:root[data-layout="mobile"] .card{padding:18px 16px;gap:12px}
+:root[data-layout="mobile"] .num{font-size:64px}
+:root[data-layout="mobile"] .card.revealed .num{font-size:40px}
+:root[data-layout="mobile"] .label{font-size:16px}
+:root[data-layout="mobile"] .q{font-size:20px}
+:root[data-layout="mobile"] .q.idle{font-size:16px}
+:root[data-layout="mobile"] .ansbody{font-size:15px}
+:root[data-layout="mobile"] .ansbody .text{font-size:18px}
+:root[data-layout="mobile"] .ansbody .lead{font-size:20px}
+:root[data-layout="mobile"] .chip-i{font-size:14px}
+:root[data-layout="mobile"] .group ol{font-size:14px}
+:root[data-layout="mobile"] .group h4{font-size:14px}
+:root[data-layout="mobile"] .groups{grid-template-columns:1fr}
+:root[data-layout="mobile"] .timer{width:64px;height:64px;margin-bottom:14px}
+:root[data-layout="mobile"] .timer .tval{font-size:22px}
+:root[data-layout="mobile"] .tile .tn{font-size:18px}
+:root[data-layout="mobile"] .primary{font-size:20px;height:52px}
+:root[data-layout="mobile"] .drawer{width:100%;padding:16px}
+:root[data-layout="mobile"] .dhead h2{font-size:18px}
+:root[data-layout="mobile"] .ditem summary{font-size:14px}
+:root[data-layout="mobile"] .stage{max-width:480px;margin:0 auto}
+:root[data-forced]{--u:11px}
+:root[data-forced],:root[data-forced] body{height:auto}
+:root[data-forced] body{display:block;overflow:auto}
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation:none!important;transition:none!important}
 }
@@ -236,6 +250,10 @@ h1{font-family:var(--display);font-weight:900;font-size:calc(3.4*var(--u));margi
         <button class="icon" id="soundBtn" type="button" title="音效 (S)" aria-label="音效開關">
           <svg class="son" viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16 9a3.5 3.5 0 0 1 0 6"/><path d="M18.5 6.5a7 7 0 0 1 0 11"/></svg>
           <svg class="soff" viewBox="0 0 24 24" hidden><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M17 9l4 6M21 9l-4 6"/></svg>
+        </button>
+        <button class="icon" id="layoutBtn" type="button" title="切換版面 (V)" aria-label="切換電腦版／手機版">
+          <svg class="l-desk" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg>
+          <svg class="l-phone" viewBox="0 0 24 24" hidden><rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/></svg>
         </button>
         <button class="icon" id="bankBtn" type="button" title="題庫 (L)" aria-label="開啟題庫"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/></svg></button>
         <button class="icon" id="fsBtn" type="button" title="全螢幕 (F)" aria-label="全螢幕"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
@@ -279,6 +297,11 @@ h1{font-family:var(--display);font-weight:900;font-size:calc(3.4*var(--u));margi
             <button type="button" data-t="0">關</button><button type="button" data-t="30">30 秒</button><button type="button" data-t="60">60 秒</button><button type="button" data-t="90">90 秒</button>
           </div>
         </div>
+        <div class="set"><span class="setk">版面</span>
+          <div class="seg" id="layoutSeg" role="group" aria-label="版面">
+            <button type="button" data-l="auto">自動</button><button type="button" data-l="desktop">電腦版</button><button type="button" data-l="mobile">手機版</button>
+          </div>
+        </div>
         <label class="toggle"><span>不重複抽題（抽完一輪自動重來）</span><input type="checkbox" id="norepeat" checked><span class="sw"></span></label>
       </div>
     </aside>
@@ -294,6 +317,7 @@ h1{font-family:var(--display);font-weight:900;font-size:calc(3.4*var(--u));margi
       <span><kbd class="k">L</kbd> 題庫</span>
       <span><kbd class="k">F</kbd> 全螢幕</span>
       <span><kbd class="k">S</kbd> 音效</span>
+      <span><kbd class="k">V</kbd> 版面</span>
       <span class="sp"></span>
       <span>點題號格可直接抽該題 · 點計時圈可暫停</span>
     </div>
@@ -355,6 +379,25 @@ const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const store={get(k,d){try{const v=localStorage.getItem('ljjc.'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem('ljjc.'+k,JSON.stringify(v))}catch(e){}}};
+
+/* ---------- layout: auto / desktop / mobile ---------- */
+const LAYOUT_NAMES={auto:'自動',desktop:'電腦版',mobile:'手機版'};
+let layoutMode=['auto','desktop','mobile'].includes(store.get('layout','auto'))?store.get('layout','auto'):'auto';
+const narrowMQ=matchMedia('(max-width:760px)');
+function applyLayout(){
+  const narrow=narrowMQ.matches,root=document.documentElement;
+  const mobile=layoutMode==='auto'?narrow:layoutMode==='mobile';
+  root.dataset.layout=mobile?'mobile':'desktop';
+  if(!mobile&&narrow)root.dataset.forced='1';else delete root.dataset.forced;
+  [...$('layoutSeg').children].forEach(b=>b.classList.toggle('on',b.dataset.l===layoutMode));
+  document.querySelector('.l-desk').hidden=mobile;document.querySelector('.l-phone').hidden=!mobile;
+  $('layoutBtn').title=`版面：${LAYOUT_NAMES[layoutMode]}${layoutMode==='auto'?'（目前'+(mobile?'手機版':'電腦版')+'）':''}，點一下切換 (V)`;
+  if(typeof sizeCanvases==='function')requestAnimationFrame(sizeCanvases);
+}
+function setLayout(m){layoutMode=m;store.set('layout',m);applyLayout();}
+function flipLayout(){setLayout(document.documentElement.dataset.layout==='mobile'?'desktop':'mobile');}
+narrowMQ.addEventListener?narrowMQ.addEventListener('change',applyLayout):narrowMQ.addListener(applyLayout);
+applyLayout();
 
 let used=new Set(),cur=-1,round=1,animating=false;
 let soundOn=store.get('sound',true),tLen=store.get('timer',30);
@@ -508,6 +551,8 @@ resetBtn.onclick=reset;
 timer.onclick=toggleTimer;
 $('soundBtn').onclick=()=>setSound(!soundOn);
 $('bankBtn').onclick=toggleDrawer;
+$('layoutBtn').onclick=flipLayout;
+$('layoutSeg').onclick=e=>{const b=e.target.closest('button');if(b)setLayout(b.dataset.l);};
 $('closeBtn').onclick=closeDrawer;
 scrim.onclick=closeDrawer;
 $('fsBtn').onclick=fullscreen;
@@ -527,6 +572,7 @@ document.addEventListener('keydown',e=>{
   else if(/^[fF]$/.test(k))fullscreen();
   else if(/^[lL]$/.test(k))toggleDrawer();
   else if(/^[sS]$/.test(k))setSound(!soundOn);
+  else if(/^[vV]$/.test(k))flipLayout();
   else if(/^[0-9]$/.test(k)){const n=k==='0'?10:+k;if(n<=QS.length){closeDrawer();draw(n-1);}}
 });
 
