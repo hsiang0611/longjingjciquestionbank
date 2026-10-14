@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>龍井青商抽題</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@600;900&family=Noto+Sans+TC:wght@400;500;700&display=swap">
+<style>
+/* Layout: one centered drawing stage (question slip + draw button), with the full question pool listed below */
+:root{
+  --bg:#f3f5f8; --surface:#ffffff; --ink:#18223a; --muted:#5b6680;
+  --line:#d9dfe9; --accent:#1f4fa3; --accent-ink:#ffffff; --gold:#b8862b; --answer:#eef3fb;
+  --display:"Noto Serif TC","Songti TC","PMingLiU",serif;
+  --body:"Noto Sans TC","Microsoft JhengHei","PingFang TC",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f1522; --surface:#18203a; --ink:#e6ebf5; --muted:#9aa6c0;
+  --line:#2a3552; --accent:#6f9cf0; --accent-ink:#0b1120; --gold:#e0b25a; --answer:#1d2a48; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f1522; --surface:#18203a; --ink:#e6ebf5; --muted:#9aa6c0;
+  --line:#2a3552; --accent:#6f9cf0; --accent-ink:#0b1120; --gold:#e0b25a; --answer:#1d2a48; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.7}
+.wrap{max-width:760px;margin:0 auto;padding-block:32px 56px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  display:flex;flex-direction:column;gap:28px}
+header{display:flex;flex-direction:column;gap:4px}
+.eyebrow{font-size:13px;letter-spacing:.12em;color:var(--gold);font-weight:700}
+h1{font-family:var(--display);font-weight:900;font-size:clamp(28px,6vw,40px);margin:0;line-height:1.25;text-wrap:balance}
+.sub{color:var(--muted);margin:0}
+
+.stage{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:28px clamp(18px,4vw,36px);
+  display:flex;flex-direction:column;gap:20px;box-shadow:0 8px 24px -16px rgba(20,40,90,.35)}
+.meta{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;color:var(--muted);font-size:14px}
+.no{font-family:var(--display);font-weight:900;font-size:15px;color:var(--accent);letter-spacing:.06em}
+.q{font-family:var(--display);font-weight:600;font-size:clamp(20px,4.4vw,26px);line-height:1.55;margin:0;min-height:2.6em;text-wrap:pretty}
+.q.idle{color:var(--muted)}
+.ans{background:var(--answer);border-radius:10px;padding:16px 18px;white-space:pre-wrap;font-size:16px;overflow-x:auto}
+.ans b{display:block;color:var(--accent);font-size:13px;letter-spacing:.1em;margin-bottom:4px}
+.flip{animation:flip .45s ease}
+@keyframes flip{from{transform:rotateX(70deg);opacity:.2}to{transform:none;opacity:1}}
+@media (prefers-reduced-motion:reduce){.flip{animation:none}}
+
+.controls{display:flex;gap:12px;flex-wrap:wrap}
+button{font:inherit;cursor:pointer;border-radius:10px;padding:12px 20px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-weight:500}
+button:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+button.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:700;font-size:18px;padding:14px 32px;flex:1 1 200px}
+button:disabled{opacity:.45;cursor:default}
+.opt{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--muted);cursor:pointer}
+.opt input{width:18px;height:18px;accent-color:var(--accent)}
+
+.pool h2{font-family:var(--display);font-size:20px;margin:0 0 10px}
+.pool ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;border-top:1px solid var(--line)}
+.pool li{border-bottom:1px solid var(--line)}
+.pool details summary{cursor:pointer;padding:12px 4px;display:flex;gap:12px;align-items:baseline}
+.pool details summary::-webkit-details-marker{display:none}
+.pool .n{font-variant-numeric:tabular-nums;color:var(--accent);font-weight:700;min-width:2em}
+.pool .t{flex:1;min-width:0}
+.pool .used{font-size:12px;color:var(--gold);white-space:nowrap}
+.pool .a{white-space:pre-wrap;padding:0 4px 14px 3.2em;color:var(--muted);overflow-x:auto}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <span class="eyebrow">JCI 國際青年商會 · 會務題庫</span>
+    <h1>龍井青商抽題</h1>
+    <p class="sub">按「抽題」隨機出一題，想好後再按「看答案」。</p>
+  </header>
+
+  <section class="stage" aria-live="polite">
+    <div class="meta">
+      <span class="no" id="no">尚未抽題</span>
+      <span id="left"></span>
+    </div>
+    <p class="q idle" id="q">題庫共 10 題，按下方按鈕開始。</p>
+    <div class="ans" id="ans" hidden></div>
+    <div class="controls">
+      <button class="primary" id="draw" type="button">抽題</button>
+      <button id="show" type="button" disabled>看答案</button>
+      <button id="reset" type="button">重新洗牌</button>
+    </div>
+    <label class="opt"><input type="checkbox" id="norepeat" checked> 不重複抽題（抽完一輪自動重來）</label>
+  </section>
+
+  <section class="pool">
+    <h2>全部題目</h2>
+    <ol id="list"></ol>
+  </section>
+</div>
+
+<script>
+const QS = [
+ {q:"本會委員會之種類有哪幾種？",
+  a:"常設委員會：\n1. 獎勵評審委員會　2. 基金保管委員會\n3. 長期發展委員會　4. 選務委員會\n5. 會員訓練委員會　6. 會章委員會\n7. 青商夫人姑爺聯誼會\n\n工作委員會：\n1. 青商家庭委員會　2. 會員擴展服務委員會\n3. 社區發展委員會　4. 編輯記錄委員會\n5. 公共關係委員會　6. 兄弟友好委員會\n7. 運動休閒委員會　8. 才能發展委員會"},
+ {q:"請問每年會員繳費後，分會應協助完成哪三件事？",
+  a:"1. 與總會網站登錄會員名錄\n2. 報繳年度保險名單\n3. 勾選年度會員"},
+ {q:"七種附屬動議／優先順序",
+  a:"散會（休息）動議、擱置動議、停止討論動議、延期討論動議、付委動議、修正動議、無期延期動議"},
+ {q:"青商會之國際通訊語言有哪幾種？請用一種自我介紹。",
+  a:"英文、日文、法文、西班牙文"},
+ {q:"青商組織共分為幾大區？",
+  a:"四大洲（美洲、亞太區、歐洲、非洲）"},
+ {q:"動議有哪三種種類？",
+  a:"主動議、附屬動議、偶發動議"},
+ {q:"請問世界總會設置在何處？",
+  a:"總部美國聖路易斯"},
+ {q:"會議中有哪四項無須取得發言地位，並得以間斷他人發言？",
+  a:"會議詢問、秩序問題、權宜問題、申訴動議"},
+ {q:"本會於何時成立？第幾個成立的分會？",
+  a:"86/4/26 成立\n中二區第 18 個分會\n中區第 53 個分會\n總會第 209 個分會"},
+ {q:"會員代表大會應於召開幾日前將開會通知函寄出函知全體會員及主管機關？",
+  a:"15 日前"}
+];
+
+const $ = id => document.getElementById(id);
+let used = new Set(), cur = -1, round = 1;
+
+function renderList(){
+  $("list").innerHTML = QS.map((x,i)=>`<li><details><summary><span class="n">${i+1}.</span><span class="t">${x.q}</span>${used.has(i)?'<span class="used">已抽</span>':''}</summary><div class="a">${x.a}</div></details></li>`).join("");
+}
+function renderLeft(){
+  $("left").textContent = $("norepeat").checked ? `第 ${round} 輪 · 剩 ${QS.length-used.size} 題` : `共 ${QS.length} 題`;
+}
+function draw(){
+  let pool = QS.map((_,i)=>i);
+  if($("norepeat").checked){
+    if(used.size>=QS.length){used.clear(); round++;}
+    pool = pool.filter(i=>!used.has(i));
+  }
+  if(pool.length>1) pool = pool.filter(i=>i!==cur);
+  cur = pool[Math.floor(Math.random()*pool.length)];
+  used.add(cur);
+  const q=$("q"); q.classList.remove("idle","flip"); void q.offsetWidth; q.classList.add("flip");
+  q.textContent = QS[cur].q;
+  $("no").textContent = `第 ${cur+1} 題`;
+  $("ans").hidden = true; $("show").disabled = false; $("show").textContent = "看答案";
+  renderLeft(); renderList();
+}
+$("draw").onclick = draw;
+$("show").onclick = () => {
+  const a=$("ans");
+  if(a.hidden){ a.innerHTML = "<b>答案</b>"; a.append(QS[cur].a); a.hidden=false; $("show").textContent="收起答案"; }
+  else { a.hidden=true; $("show").textContent="看答案"; }
+};
+$("reset").onclick = () => {
+  used.clear(); cur=-1; round=1;
+  $("q").textContent="已重新洗牌，按「抽題」開始。"; $("q").classList.add("idle");
+  $("no").textContent="尚未抽題"; $("ans").hidden=true; $("show").disabled=true; $("show").textContent="看答案";
+  renderLeft(); renderList();
+};
+$("norepeat").onchange = renderLeft;
+renderLeft(); renderList();
+</script>
+</body>
+</html>
